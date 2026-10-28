@@ -49,8 +49,9 @@ class ShoppingListViewModel(application: Application) : AndroidViewModel(applica
         updateItem(item)
     }
 
-    fun setAllChecked(categoryIndex: Int, checked: Boolean) {
+    fun setAllChecked(categoryId: Long, checked: Boolean) {
         val current = _categories.value?.toMutableList() ?: return
+        val categoryIndex = current.indexOfFirst { it.id == categoryId }
         if (categoryIndex !in current.indices) return
         val items = current[categoryIndex].items.map { item ->
             if (item.isHeading) item else item.copy(isChecked = checked)
@@ -66,8 +67,9 @@ class ShoppingListViewModel(application: Application) : AndroidViewModel(applica
         updateItem(item.copy(isFlagged = !item.isFlagged))
     }
 
-    fun reorderItem(categoryIndex: Int, fromIndex: Int, toIndex: Int) {
+    fun reorderItem(categoryId: Long, fromIndex: Int, toIndex: Int) {
         val current = _categories.value?.toMutableList() ?: return
+        val categoryIndex = current.indexOfFirst { it.id == categoryId }
         if (categoryIndex !in current.indices) return
         val items = current[categoryIndex].items.toMutableList()
         if (fromIndex !in items.indices || toIndex !in items.indices) return
@@ -78,8 +80,9 @@ class ShoppingListViewModel(application: Application) : AndroidViewModel(applica
         saveState()
     }
 
-    fun addItem(categoryIndex: Int, position: Int, name: String) {
+    fun addItem(categoryId: Long, position: Int, name: String) {
         val current = _categories.value?.toMutableList() ?: return
+        val categoryIndex = current.indexOfFirst { it.id == categoryId }
         if (categoryIndex !in current.indices) return
         val items = current[categoryIndex].items.toMutableList()
         val newId = current.flatMap { it.items }.maxOfOrNull { it.id }?.plus(1) ?: 0L

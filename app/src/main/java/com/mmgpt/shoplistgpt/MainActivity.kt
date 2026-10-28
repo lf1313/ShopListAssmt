@@ -119,13 +119,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        var lastSize = viewModel.categories.value?.size ?: 0
-        viewModel.categories.observe(this) { categories ->
-            val newSize = categories.size
-            if (newSize != lastSize) {
-                pagerAdapter.notifyDataSetChanged()
-                lastSize = newSize
-            }
+        viewModel.categories.observe(this) {
+            pagerAdapter.notifyDataSetChanged()
         }
 
         startBinding.btnShop.setOnClickListener { showShopping() }
