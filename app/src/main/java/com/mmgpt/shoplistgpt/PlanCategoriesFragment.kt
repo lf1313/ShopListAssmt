@@ -47,11 +47,15 @@ class PlanCategoriesFragment : Fragment() {
             ): Boolean {
                 val from = viewHolder.adapterPosition
                 val to = target.adapterPosition
-                val itemFrom = adapter.currentList.getOrNull(from)
-                val itemTo = adapter.currentList.getOrNull(to)
-                if (itemFrom?.isPlaceholder == true || itemTo?.isPlaceholder == true) return false
-                viewModel.reorderCategory(from - 1, to - 1)
-                adapter.moveItem(from, to)
+                val itemFrom = adapter.currentList.getOrNull(from) ?: return false
+                val itemTo = adapter.currentList.getOrNull(to) ?: return false
+                if (itemFrom.isPlaceholder || itemTo.isPlaceholder) return false
+                val currentCategories = viewModel.categories.value ?: return false
+                val fromIndex = currentCategories.indexOfFirst { it.id == itemFrom.id }
+                val toIndex = currentCategories.indexOfFirst { it.id == itemTo.id }
+                if (fromIndex != -1 && toIndex != -1) {
+                    viewModel.reorderCategory(fromIndex, toIndex)
+                }
                 return true
             }
 
@@ -62,7 +66,8 @@ class PlanCategoriesFragment : Fragment() {
 
         adapter = ItemAdapter(
             onAction = { item, action ->
-                val index = adapter.currentList.indexOf(item) - 1
+                val categories = viewModel.categories.value ?: emptyList()
+                val index = categories.indexOfFirst { it.id == item.id }
                 when (action) {
                     ItemAdapter.Action.EDIT -> showEditDialog(index, item.name)
                     ItemAdapter.Action.DELETE -> viewModel.deleteCategory(index)
@@ -85,10 +90,13 @@ class PlanCategoriesFragment : Fragment() {
                 if (position != RecyclerView.NO_POSITION) {
                     val item = adapter.currentList.getOrNull(position)
                     if (item?.isHeading == true) {
-                        val index = position - 1
-                        val viewPager = requireActivity().findViewById<ViewPager2>(R.id.viewPager)
-                        viewPager.currentItem = index + 1
-                        return true
+                        val categories = viewModel.categories.value ?: emptyList()
+                        val catIndex = categories.indexOfFirst { it.id == item.id }
+                        if (catIndex != -1) {
+                            val viewPager = requireActivity().findViewById<ViewPager2>(R.id.viewPager)
+                            viewPager.currentItem = catIndex + 1
+                            return true
+                        }
                     }
                 }
                 return super.onDoubleTap(e)
@@ -125,18 +133,9 @@ class PlanCategoriesFragment : Fragment() {
     }
 
     private fun showEditDialog(index: Int, current: String) {
-        val input = android.widget.EditText(requireContext()).apply { setText(current) }
-        AlertDialog.Builder(requireContext())
-            .setTitle(getString(R.string.edit))
-            .setView(input)
-            .setPositiveButton(android.R.string.ok) { _, _ ->
-                val text = input.text.toString().trim()
-                if (text.isNotEmpty()) {
-                    viewModel.editCategory(index, text)
-                }
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
+        requireContext().showEditInputDialog(getString(R.string.edit), current) { text ->
+            viewModel.editCategory(index, text)
+        }
     }
 
     override fun onDestroyView() {

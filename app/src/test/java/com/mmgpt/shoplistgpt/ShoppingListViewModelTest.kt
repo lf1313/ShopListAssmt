@@ -59,4 +59,23 @@ class ShoppingListViewModelTest {
         assertEquals(2, categories?.get(0)?.items?.size)
         assertEquals("Chicken", categories?.get(0)?.items?.get(0)?.name)
     }
+
+    @Test
+    fun testRepeatedCategoryReordering() {
+        val cat1 = ShoppingCategory(1L, "Meat", emptyList())
+        val cat2 = ShoppingCategory(2L, "Dairy", emptyList())
+        val cat3 = ShoppingCategory(3L, "Fruit", emptyList())
+
+        viewModel.setCategories(listOf(cat1, cat2, cat3))
+
+        // Reorder repeatedly
+        viewModel.reorderCategory(0, 2) // Meat to end: [Dairy, Fruit, Meat]
+        viewModel.reorderCategory(2, 0) // Meat back to start: [Meat, Dairy, Fruit]
+
+        val categories = viewModel.categories.value
+        assertNotNull(categories)
+        assertEquals(1L, categories?.get(0)?.id)
+        assertEquals(2L, categories?.get(1)?.id)
+        assertEquals(3L, categories?.get(2)?.id)
+    }
 }

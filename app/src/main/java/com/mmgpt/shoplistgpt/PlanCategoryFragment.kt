@@ -104,18 +104,9 @@ class PlanCategoryFragment : Fragment() {
     }
 
     private fun showEditDialog(item: ShoppingItem) {
-        val input = android.widget.EditText(requireContext()).apply { setText(item.name) }
-        AlertDialog.Builder(requireContext())
-            .setTitle(getString(R.string.edit))
-            .setView(input)
-            .setPositiveButton(android.R.string.ok) { _, _ ->
-                val text = input.text.toString().trim()
-                if (text.isNotEmpty()) {
-                    viewModel.editItem(item, text)
-                }
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
+        requireContext().showEditInputDialog(getString(R.string.edit), item.name) { text ->
+            viewModel.editItem(item, text)
+        }
     }
 
     override fun onDestroyView() {
